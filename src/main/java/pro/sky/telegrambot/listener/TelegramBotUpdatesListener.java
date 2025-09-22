@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
 
+    public static final String FORMAT_TEXT = "(\\d{2}\\.\\d{2}\\.\\d{4}\\s\\d{2}:\\d{2})(\\s+)(.+)";
+    public static final String FORMAT_DATE_TIME = "dd.MM.yyyy HH:mm";
+
     private Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
 
     @Autowired
@@ -56,7 +59,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                 SendMessage sendMessage2 = new SendMessage(update.message().chat().id(), "Напишите дату, время и текст напоминания в формате: \n 01.01.2022 20:00 Сделать домашнюю работу");
                 telegramBot.execute(sendMessage2);
             } else {
-                Pattern pattern = Pattern.compile("(\\d{2}\\.\\d{2}\\.\\d{4}\\s\\d{2}:\\d{2})(\\s+)(.+)");
+                Pattern pattern = Pattern.compile(FORMAT_TEXT);
                 Matcher matcher = pattern.matcher(str);
 
                 Chats chats = new Chats();
@@ -67,7 +70,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
                 Messages messages = new Messages();
                 if (matcher.matches()) {
-                    LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+                    LocalDateTime localDateTime = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern(FORMAT_DATE_TIME));
                     String text = matcher.group(3);
                     messages.setDateTime(localDateTime);
                     messages.setText(text);
@@ -76,7 +79,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     SendMessage sendMessage = new SendMessage(chats.getId(), "Напоминание установлено!");
                     telegramBot.execute(sendMessage);
                 } else {
-                    SendMessage sendMessage = new SendMessage(chats.getId(), "Не корректные данные, введите еще раз, солгасно формату: \\n 01.01.2022 20:00 Сделать домашнюю работу\"");
+                    SendMessage sendMessage = new SendMessage(chats.getId(), "Не корректные данные, введите еще раз, согласно формату: \n 01.01.2022 20:00 Сделать домашнюю работу");
                     telegramBot.execute(sendMessage);
                 }
             }
